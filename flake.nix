@@ -36,6 +36,38 @@
               };
             };
           };
+
+          packages =
+          let
+            revision = self.shortRev or self.dirtyShortRev or "unknown";
+             in
+            {
+            default = pkgs.vintagestory.overrideAttrs (old: {
+              nativeBuildInputs = old.nativeBuildInputs ++ (with pkgs; [ dotnetCorePackages.sdk_10_0 ]);
+              
+              src = ./.;
+              srcs = old.src;
+              
+              unpackPhase = (old.unpackPhase or "") + ''
+                cp "$src"/. indevMod -r
+                tar -xf $srcs --strip-components=1
+              '';
+
+              buildPhase = (old.buildPhase or "") + ''
+                cd indevMod/src
+                dotnet build
+                ls -lah
+                cd ....
+                ls -lah
+              '';
+
+              makeWrapperArgs = old.makeWrapperArgs ++ [
+                '' --tracelog ''
+                '' --addModPath "indevMod/src/bin/Debug/Mods" ''
+                '' --addOrigin "indevMod/src/assets" ''
+              ];
+            });
+          };
         };
     };
 }
