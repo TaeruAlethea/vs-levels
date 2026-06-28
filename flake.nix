@@ -37,24 +37,11 @@
             };
           };
 
-          apps ={config,...}: {
-            default = {
-              program = ''${pkgs.vintagestory} --tracelog --addModPath \"${config.packages.default}/lib/vs-levels\"'';
-              type = "app";
-            };
-          };
-
-          packages =
+          packages = {config, ...}:
           let
             projectName = "vs-levels";
             revision = "0.1"; #self.shortRev or self.dirtyShortRev or "unknown";
             srcFolder = ./src;
-            buildType = "Debug";
-            commonMakeWrapperArgs = [
-              '' --tracelog ''
-              '' --addModPath \"${srcFolder}/bin/${buildType}/Mods\" ''
-              '' --addOrigin \"${srcFolder}/assets\" ''
-            ];
              in
             {
             default = pkgs.buildDotnetModule {
@@ -63,7 +50,6 @@
               src = srcFolder;
 
               nativeBuildInputs = [
-                # pkgs.makeWrapper
                 (lib.getBin pkgs.vintagestory)
               ];
 
@@ -80,13 +66,16 @@
               executables = [];
               packnupkg = false;
 
-              # makeWrapperArgs = commonMakeWrapperArgs;
-              fixupPhase = ''
-                ls -lah
-              #     makeWrapper ${lib.getExe pkgs.vintagestory} $out/bin/client \
-              #       "''${makeWrapperArgs[@]}" \
-              #       --add-flags $out/
-                '';
+              # desktopItem = [
+              #   (pkgs.makeDesktopItem {
+              #     name = "vintagestory-indev";
+              #     desktopName = "Vintage Story w/indevMods";
+              #     exec = "${pkgs.vintagestory} --tracelog --addModPath \"${config.packages.default}/lib\" ";
+              #     icon = "vintagestory";
+              #     comment = "Innovate and explore in a sandbox world";
+              #     categories = [ "Game" ];
+              #   })
+              # ];
             };
           };
         };
