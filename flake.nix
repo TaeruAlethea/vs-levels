@@ -32,8 +32,9 @@
               nativeBuildInputs = with pkgs; [
                 dotnetCorePackages.sdk_10_0
               ];
+              env = {
               DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_10_0}/bin/dotnet";
-              VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+              VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";};
             };
           };
         };
