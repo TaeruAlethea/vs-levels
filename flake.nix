@@ -37,36 +37,57 @@
             };
           };
 
+          apps ={config,...}: {
+            default = {
+              program = ''${pkgs.vintagestory} --tracelog --addModPath \"${config.packages.default}/lib/vs-levels\"'';
+              type = "app";
+            };
+          };
+
           packages =
           let
-            revision = self.shortRev or self.dirtyShortRev or "unknown";
+            projectName = "vs-levels";
+            revision = "0.1"; #self.shortRev or self.dirtyShortRev or "unknown";
+            srcFolder = ./src;
+            buildType = "Debug";
+            commonMakeWrapperArgs = [
+              '' --tracelog ''
+              '' --addModPath \"${srcFolder}/bin/${buildType}/Mods\" ''
+              '' --addOrigin \"${srcFolder}/assets\" ''
+            ];
              in
             {
-            default = pkgs.vintagestory.overrideAttrs (old: {
-              nativeBuildInputs = old.nativeBuildInputs ++ (with pkgs; [ dotnetCorePackages.sdk_10_0 ]);
-              
-              src = ./.;
-              srcs = old.src;
-              
-              unpackPhase = (old.unpackPhase or "") + ''
-                cp "$src"/. indevMod -r
-                tar -xf $srcs --strip-components=1
-              '';
+            default = pkgs.buildDotnetModule {
+              pname = projectName;
+              version = revision;
+              src = srcFolder;
 
-              buildPhase = (old.buildPhase or "") + ''
-                cd indevMod/src
-                dotnet build
-                ls -lah
-                cd ....
-                ls -lah
-              '';
-
-              makeWrapperArgs = old.makeWrapperArgs ++ [
-                '' --tracelog ''
-                '' --addModPath "indevMod/src/bin/Debug/Mods" ''
-                '' --addOrigin "indevMod/src/assets" ''
+              nativeBuildInputs = [
+                # pkgs.makeWrapper
+                (lib.getBin pkgs.vintagestory)
               ];
-            });
+
+              env = {
+                VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+              };
+
+              projectFile = "./${projectName}.csproj";
+              nugetDeps = ./src/deps.json; # update with `nix build .#default.fetch-deps`
+
+              dotnet-sdk = pkgs.dotnetCorePackages.sdk_10_0;
+              dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
+
+              executables = [];
+              packnupkg = false;
+
+              # makeWrapperArgs = commonMakeWrapperArgs;
+              fixupPhase = ''
+                ls -lah
+              #     makeWrapper ${lib.getExe pkgs.vintagestory} $out/bin/client \
+              #       "''${makeWrapperArgs[@]}" \
+              #       --add-flags $out/
+                '';
+            };
           };
         };
     };
