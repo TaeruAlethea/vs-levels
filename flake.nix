@@ -30,9 +30,9 @@
           devShells = {
             default = pkgs.mkShell {
               nativeBuildInputs = with pkgs; [
-                dotnetCorePackages.sdk_8_0
+                dotnetCorePackages.sdk_10_0
               ];
-              DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_8_0}/bin/dotnet";
+              DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_10_0}/bin/dotnet";
               VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
             };
           };
