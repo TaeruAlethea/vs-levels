@@ -29,12 +29,17 @@
 
           devShells = {
             default = pkgs.mkShell {
-              nativeBuildInputs = with pkgs; [
-                dotnetCorePackages.sdk_10_0
-              ];
               env = {
-              DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_10_0}/bin/dotnet";
-              VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";};
+                DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_10_0}/bin/dotnet";
+                VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+              };
+            };
+            rider = pkgs.mkShell {
+              nativeBuildInputs = with pkgs; [ rider ];
+              env = {
+                DOTNET_BIN = "${pkgs.dotnetCorePackages.sdk_10_0}/bin/dotnet";
+                VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+              };
             };
           };
         };
