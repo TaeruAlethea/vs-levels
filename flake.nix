@@ -40,15 +40,13 @@
 
           packages =
             let
-              projectName = "vs-levels";
-              revision = "0.1"; # self.shortRev or self.dirtyShortRev or "unknown";
-              srcFolder = ./src;
+              modinfo = builtins.fromJSON (builtins.readFile ./src/modinfo.json);
             in
             {
               default = pkgs.buildDotnetModule {
-                pname = projectName;
-                version = revision;
-                src = srcFolder;
+                pname = modinfo.modid;
+                version = modinfo.version;
+                src = ./src;
 
                 nativeBuildInputs = [
                   (lib.getBin pkgs.vintagestory)
@@ -58,18 +56,17 @@
                   VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
                 };
 
-                projectFile = "./${projectName}.csproj";
+                projectFile = "./${modinfo.modid}.csproj";
                 nugetDeps = ./src/deps.json; # update with `nix build .#default.fetch-deps`
 
                 dotnet-sdk = pkgs.dotnetCorePackages.sdk_10_0;
                 dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
 
                 fixupPhase = ''
-                  ls -lah
                   mkdir -p "$out/bin"
-                  echo '#!${pkgs.bash}/bin/bash' > $out/bin/${projectName}
-                  echo "${lib.getExe pkgs.vintagestory} --tracelog --addModPath $out/lib" >> $out/bin/${projectName}
-                  chmod +x "$out/bin/${projectName}"
+                  echo '#!${pkgs.bash}/bin/bash' > $out/bin/${modinfo.modid}
+                  echo "${lib.getExe pkgs.vintagestory} --tracelog --addModPath $out/lib" >> $out/bin/${modinfo.modid}
+                  chmod +x "$out/bin/${modinfo.modid}"
                 '';
 
                 executables = [ ];
