@@ -48,10 +48,6 @@
                 version = modinfo.version;
                 src = ./src;
 
-                nativeBuildInputs = [
-                  (lib.getBin pkgs.vintagestory)
-                ];
-
                 env = {
                   VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
                 };
