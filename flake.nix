@@ -15,6 +15,7 @@
           pkgs,
           lib,
           system,
+          config,
           ...
         }:
         {
@@ -37,47 +38,44 @@
             };
           };
 
-          packages = {config, ...}:
-          let
-            projectName = "vs-levels";
-            revision = "0.1"; #self.shortRev or self.dirtyShortRev or "unknown";
-            srcFolder = ./src;
-             in
+          packages =
+            let
+              projectName = "vs-levels";
+              revision = "0.1"; # self.shortRev or self.dirtyShortRev or "unknown";
+              srcFolder = ./src;
+            in
             {
-            default = pkgs.buildDotnetModule {
-              pname = projectName;
-              version = revision;
-              src = srcFolder;
+              default = pkgs.buildDotnetModule {
+                pname = projectName;
+                version = revision;
+                src = srcFolder;
 
-              nativeBuildInputs = [
-                (lib.getBin pkgs.vintagestory)
-              ];
+                nativeBuildInputs = [
+                  (lib.getBin pkgs.vintagestory)
+                ];
 
-              env = {
-                VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+                env = {
+                  VINTAGE_STORY = "${pkgs.vintagestory}/share/vintagestory";
+                };
+
+                projectFile = "./${projectName}.csproj";
+                nugetDeps = ./src/deps.json; # update with `nix build .#default.fetch-deps`
+
+                dotnet-sdk = pkgs.dotnetCorePackages.sdk_10_0;
+                dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
+
+                fixupPhase = ''
+                  ls -lah
+                  mkdir -p "$out/bin"
+                  echo '#!${pkgs.bash}/bin/bash' > $out/bin/${projectName}
+                  echo "${lib.getExe pkgs.vintagestory} --tracelog --addModPath $out/lib" >> $out/bin/${projectName}
+                  chmod +x "$out/bin/${projectName}"
+                '';
+
+                executables = [ ];
+                packnupkg = false;
               };
-
-              projectFile = "./${projectName}.csproj";
-              nugetDeps = ./src/deps.json; # update with `nix build .#default.fetch-deps`
-
-              dotnet-sdk = pkgs.dotnetCorePackages.sdk_10_0;
-              dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
-
-              executables = [];
-              packnupkg = false;
-
-              # desktopItem = [
-              #   (pkgs.makeDesktopItem {
-              #     name = "vintagestory-indev";
-              #     desktopName = "Vintage Story w/indevMods";
-              #     exec = "${pkgs.vintagestory} --tracelog --addModPath \"${config.packages.default}/lib\" ";
-              #     icon = "vintagestory";
-              #     comment = "Innovate and explore in a sandbox world";
-              #     categories = [ "Game" ];
-              #   })
-              # ];
             };
-          };
         };
     };
 }
